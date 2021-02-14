@@ -1,0 +1,8 @@
+[package]
+name = "codewars"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.26.0"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "22b26d3c3447a29324897eeefa5ddb59ac9845ab"}
