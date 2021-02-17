@@ -27,7 +27,6 @@ lemma lem1 {ε N : ℝ}
   (pos_ε : 0 ≤ ε)
   (pos_N : 0 < N)  
   (hε : ε < 2 * (1 / (2 * N) )) 
-
 : ε * N < 1 := 
 calc 
   ε * N <  2 * (1 / (2 * N) ) * N : by sorry 
@@ -69,7 +68,7 @@ have : dist x₀ x₁ < 2 * ε, by linarith,
 clear h₀ h₁ hd₀ hd₁ hd₀₁ hN₀ hN₁ n,
 rw he at this,
 
-exact lem1 (@dist_nonneg X _inst_1 x₀ x₁) this,
+-- simp only [dist_nonneg, this],
 
 -- specialize h₀ N₀,
 -- have : N₀ ≤ N₀, by exact rfl.ge, 
