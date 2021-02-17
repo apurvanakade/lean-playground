@@ -34,21 +34,26 @@ theorem thm_3p6p2 (point line : Type) (incident_with : point → line → Prop)
   [incidence point line incident_with] (l : line) :
   ∃ P, ¬incident_with P l := 
 begin 
-have := _inst_1.I₃,
-cases this with P this,
-cases this with Q this,
-cases this with R this,
-cases this with hpq this,
-cases this with hqr this, 
-cases this with hpr this,
-specialize this l,
-push_neg at this,
+-- from _inst_1.I₃ extract three points P, Q, R,
+-- the proofs of distinctness hPQ, hQR, hPR, 
+-- and the proof of incidence hl of P, Q, R on l
+rcases _inst_1.I₃ with ⟨ P, Q, R, hPQ, hQR, hPR, hl⟩, 
+specialize hl l,
+push_neg at hl,
 
 by_cases hpl: (incident_with P l), 
   by_cases hql: (incident_with Q l),
-    use R,
-    exact this hpl hql,
 
-    use Q,
-    use P,
+    -- both P and Q lie on l
+    show ∃ (P : point), ¬incident_with P l, 
+      use R,
+      exact hl hpl hql,
+
+    -- P lies on l but Q does not lie on l
+    show ∃ (P : point), ¬incident_with P l,
+      use Q,
+
+    -- P does not lie on l
+    show ∃ (P : point), ¬incident_with P l,
+      use P,
 end 
