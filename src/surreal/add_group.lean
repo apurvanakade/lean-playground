@@ -16,17 +16,6 @@ instance : add_group surreal :=
   sub_eq_add_neg  := by try_refl_tac,
   add_left_neg    := by { rintros ⟨x, ox⟩, exact quotient.sound pgame.add_left_neg_equiv } }
 
-instance : add_comm_group surreal := { add := _,
-  add_assoc := _,
-  zero := _,
-  zero_add := _,
-  add_zero := _,
-  neg := _,
-  sub := _,
-  sub_eq_add_neg := _,
-  add_left_neg := _,
-  add_comm := _ }
-
 end surreal
 
 
