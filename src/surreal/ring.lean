@@ -2,15 +2,33 @@ import set_theory.surreal
 
 namespace pgame
 
-def mul_zero_relabelling :
-  Π (x : pgame), relabelling (x * 0) 0
-  := by {rintros ⟨⟩, tidy}
+theorem mul_zero_relabelling : Π (x : pgame), relabelling (x * 0) 0
+| (mk xl xr xL xR) :=
+⟨ 
+by { fsplit; rintro (⟨_, ⟨⟩⟩ | ⟨_, ⟨⟩⟩) },
+by { fsplit; rintro (⟨_, ⟨⟩⟩ | ⟨_, ⟨⟩⟩) }, 
+by { rintro (⟨_, ⟨⟩⟩ | ⟨_, ⟨⟩⟩) },
+by { rintro ⟨⟩ }
+⟩
    
-def zero_mul_relabelling :
-  Π (x : pgame), relabelling (0 * x) 0
-  := by {rintros ⟨⟩, tidy}
+theorem zero_mul_relabelling : Π (x : pgame), relabelling (0 * x) 0
+| (mk xl xr xL xR) :=
+⟨
+by { fsplit; rintro (⟨⟨⟩, _⟩ | ⟨⟨⟩, _⟩) },
+by { fsplit; rintro (⟨⟨⟩, _⟩ | ⟨⟨⟩, _⟩) },
+by { rintro (⟨⟨⟩,_⟩ | ⟨⟨⟩,_⟩) },
+by { rintro ⟨⟩ }
+⟩ 
    
-end pgame
+
+theorem mul_one_relabelling :
+  Π (x : pgame), relabelling (x * (1:pgame)) x :=
+begin 
+
+sorry
+end
+
+
 
 
 
