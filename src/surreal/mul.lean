@@ -3,20 +3,24 @@ open pgame
 namespace pgame
 
 /-- An explicit description of the moves for Left in `x * y`. -/
-def left_moves_mul (x y : pgame) : (x * y).left_moves ≃ x.left_moves × y.left_moves ⊕ x.right_moves × y.right_moves :=
+def left_moves_mul {x y : pgame} : (x * y).left_moves ≃ x.left_moves × y.left_moves ⊕ x.right_moves × y.right_moves :=
 by { cases x, cases y, refl, }
 
 /-- An explicit description of the moves for Right in `x * y`. -/
-def right_moves_mul (x y : pgame) : (x * y).right_moves ≃ x.left_moves × y.right_moves ⊕ x.right_moves × y.left_moves :=
+def right_moves_mul {x y : pgame} : (x * y).right_moves ≃ x.left_moves × y.right_moves ⊕ x.right_moves × y.left_moves :=
 by { cases x, cases y, refl, }
 
--- @[simp] lemma mk_mul_move_left_inl {xl xr yl yr} {xL xR yL yR} {i j} :
---   (mk xl xr xL xR * mk yl yr yL yR).move_left (sum.inl (i,j)) =
---     (mk xl xr xL xR).move_left i + (mk yl yr yL yR) :=
--- rfl
--- @[simp] lemma add_move_left_inl {x y : pgame} {i} :
---   (x + y).move_left ((@left_moves_add x y).symm (sum.inl i)) = x.move_left i + y :=
--- by { cases x, cases y, refl, }
+@[simp] lemma mk_mul_move_left_inl {xl xr yl yr} {xL xR yL yR} {i} {j} :
+  (mk xl xr xL xR * mk yl yr yL yR).move_left (sum.inl (i,j))
+  = (mk xl xr xL xR).move_left i * (mk yl yr yL yR)
+    + (mk xl xr xL xR) * (mk yl yr yL yR).move_left j
+    - (mk xl xr xL xR).move_left i * (mk yl yr yL yR).move_left j
+:= rfl
+
+@[simp] lemma mul_move_left_inl {x y : pgame} {i} {j} :
+   (x * y).move_left ((@left_moves_mul x y).symm (sum.inl (i,j)))
+   = x.move_left i * y + x * y.move_left j - x.move_left i * y.move_left j
+:= by {cases x, cases y, refl} 
 
 -- @[simp] lemma mk_add_move_right_inl {xl xr yl yr} {xL xR yL yR} {i} :
 --   (mk xl xr xL xR + mk yl yr yL yR).move_right (sum.inl i) =
