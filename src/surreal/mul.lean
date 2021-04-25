@@ -141,9 +141,11 @@ begin
 
   refine ⟨_,_,_,_⟩,
 
-  fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩) ; exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl,
+  fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
+    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl,
 
-  fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩) ; exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl,
+  fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
+    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl,
 
   rintro (⟨i, j⟩ | ⟨i, j⟩),
   dsimp, 
