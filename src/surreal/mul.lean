@@ -70,19 +70,19 @@ w.relabelling x → y.relabelling z → (w + y).relabelling (x + z)
 begin
   refine ⟨_,_,_,_⟩,
   { fsplit,
-    { rintros (i|j),
+    { rintro (i|j),
       { exact sum.inl (L_equiv₁ i) },
       { exact sum.inr (L_equiv₂ j) }},
-    { rintros (i|j),
+    { rintro (i|j),
       { exact sum.inl (L_equiv₁.symm i) },
       { exact sum.inr (L_equiv₂.symm j) }},
     { rintro (_|_); simp only [equiv.symm_apply_apply] },
     { rintro (_|_); simp only [equiv.apply_symm_apply] }},
   { fsplit,
-    { rintros (i|j),
+    { rintro (i|j),
       { exact sum.inl (R_equiv₁ i) },
       { exact sum.inr (R_equiv₂ j) }},
-    { rintros (i|j),
+    { rintro (i|j),
       { exact sum.inl (R_equiv₁.symm i) },
       { exact sum.inr (R_equiv₂.symm j) }},
     { rintro (_|_); simp only [equiv.symm_apply_apply] },
@@ -95,7 +95,7 @@ begin
         (⟨L_equiv₁, R_equiv₁, L_relabelling₁, R_relabelling₁⟩) 
         (L_relabelling₂ j) }},
         
-  { rintros (i|j),
+  { rintro (i|j),
     { exact add_congr_relabelling 
         (R_relabelling₁ i) 
         (⟨L_equiv₂, R_equiv₂, L_relabelling₂, R_relabelling₂⟩) },
@@ -113,13 +113,13 @@ def neg_congr_relabelling : ∀ {x y : pgame}, x.relabelling y → (-x).relabell
     λ i, neg_congr_relabelling (by simpa using L_relabelling (L_equiv.symm i))⟩
 
 /-- If `w` has the same moves as `x` and `y` has the same moves as `z`,
-    then `w - y` has the same moves as `x - z`. -/
+then `w - y` has the same moves as `x - z`. -/
 theorem sub_congr_relabelling {w x y z : pgame} 
   (h₁ : w.relabelling x) (h₂ : y.relabelling z) : (w - y).relabelling (x - z) :=
 add_congr_relabelling h₁ (neg_congr_relabelling h₂)
 
 /-- If `a` has the same moves as `x`, `b` has the same moves as `y`,
-    and `c` has the same moves as `z`, then `a + b - c` has the same moves as `y + x - z`. -/
+and `c` has the same moves as `z`, then `a + b - c` has the same moves as `y + x - z`. -/
 lemma add_neg_comm {a b c x y z : pgame}
   (h₁ : a.relabelling x) (h₂ : b.relabelling y) (h₃ : c.relabelling z) :
   (a + b - c).relabelling (y + x - z) := 
