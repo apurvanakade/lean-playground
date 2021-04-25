@@ -3,11 +3,13 @@ open pgame
 namespace pgame
 
 /-- An explicit description of the moves for Left in `x * y`. -/
-def left_moves_mul {x y : pgame} : (x * y).left_moves ≃ x.left_moves × y.left_moves ⊕ x.right_moves × y.right_moves :=
+def left_moves_mul {x y : pgame} : (x * y).left_moves 
+  ≃ x.left_moves × y.left_moves ⊕ x.right_moves × y.right_moves :=
 by { cases x, cases y, refl, }
 
 /-- An explicit description of the moves for Right in `x * y`. -/
-def right_moves_mul {x y : pgame} : (x * y).right_moves ≃ x.left_moves × y.right_moves ⊕ x.right_moves × y.left_moves :=
+def right_moves_mul {x y : pgame} : (x * y).right_moves 
+  ≃ x.left_moves × y.right_moves ⊕ x.right_moves × y.left_moves :=
 by { cases x, cases y, refl, }
 
 @[simp] lemma mk_mul_move_left_inl {xl xr yl yr} {xL xR yL yR} {i j} :
@@ -58,25 +60,21 @@ by { cases x, cases y, refl, }
    = x.move_right i * y + x * y.move_left j - x.move_right i * y.move_left j
 := by {cases x, cases y, refl}
 
-example (x : Type) : x × pempty ≃ pempty := by refine equiv.prod_pempty x
+#check @punit.rec
+example (x y : Type) (a b : x) (f : x → y) : a = b → f a = f b :=
+by {intros, exact congr_arg f ᾰ}
 
-example (x y z: Type) : (x × pempty) ⊕ z ≃ pempty ⊕ z := 
-equiv.sum_congr (equiv.prod_pempty _) (equiv.cast rfl)
-
-example (x y : Type) : (x ≃ y) → (y → x) := 
-equiv.inv_fun
-
-def add_zero_relabelling' : Π (x : pgame), relabelling (x + 0) x
-| (mk xl xr xL xR) :=
+example
+  (xl xr : Type)
+  (xL : xl → pgame)
+  (xR : xr → pgame)
+  (i : xl) :
+  ((mk xl xr xL xR * 1).move_left (sum.inl (i, punit.star))).relabelling
+    (xL i) :=
 begin
-  refine ⟨_, equiv.sum_pempty xr, _, _⟩,
-  exact equiv.sum_pempty xl,
-  { rintro (i | ⟨⟨⟩⟩),
-    apply add_zero_relabelling, },
-  { rintro j,
-    apply add_zero_relabelling, }
+  sorry, 
 end
-
+  
 
 def mul_one_relabelling : Π (x : pgame), relabelling (x * 1) x
 | (mk xl xr xL xR) :=
@@ -85,83 +83,127 @@ begin
   fsplit, 
   rintro (⟨i, ⟨⟩⟩ | ⟨j, ⟨⟩⟩),
   dsimp, exact i,
+
   rintro i,
   exact sum.inl (i, punit.star), 
-  dsimp,
   
-end
+  rintros ⟨i, ⟨⟩⟩, 
+  refl,
 
-def mul_one_relabelling : Π (x : pgame), relabelling (x * 1) x
-| (mk xl xr xL xR) :=
-begin 
-  let x:= (mk xl xr xL xR),
-  refine ⟨_,_,_,_⟩,
-  have := (@left_moves_mul x 1),
-  --rw one_left_moves at *; rw one_right_moves at *,
-  dsimp[one_left_moves, one_right_moves] at *,
-  { 
-  calc 
-  (x * 1).left_moves ≃ x.left_moves × punit ⊕ x.right_moves × pempty : left_moves_mul
-  ... ≃ x.left_moves × punit ⊕ pempty : by refine equiv.sum_congr (equiv.cast rfl) (equiv.prod_pempty _)
-  ... ≃ x.left_moves × punit : equiv.sum_pempty (left_moves x × punit)
-  ... ≃ x.left_moves : equiv.prod_punit (left_moves x),
-  },
-  { 
-  calc 
-    (x * 1).right_moves ≃ x.left_moves × pempty ⊕ x.right_moves × punit : right_moves_mul
-    ... ≃ pempty ⊕ x.right_moves × punit : by refine equiv.sum_congr (equiv.prod_pempty _) (equiv.cast rfl)
-    ... ≃ x.right_moves × punit : equiv.pempty_sum (right_moves x × punit)
-    ... ≃ x.right_moves : equiv.prod_punit (right_moves x),
-  },
-  dsimp at *,
+  rcases x with ⟨x, ⟨⟩⟩,
+  intros x, refl,
+
+  fsplit,
   rintro (⟨i, ⟨⟩⟩ | ⟨i, ⟨⟩⟩),
+  exact i,
 
+  exact λ i, sum.inr (i, punit.star),
 
+  rintros (⟨i, ⟨⟩⟩| ⟨i, ⟨⟩⟩), 
+  refl,
 
+  dsimp,
+  rintros x, refl,
+
+  rintros (⟨i, ⟨⟩⟩|⟨i, ⟨⟩⟩),
+  dsimp,
   /-
-  example (x : pgame) :
-    Π (i : (x * 1).left_moves),
-      ((x * 1).move_left i).relabelling
-        (x.move_left
-           (⇑(equiv.sum_pempty (x.left_moves × punit))
-              (sum.map id ⇑(equiv.prod_pempty x.right_moves)
-                 (⇑left_moves_mul i))).fst) :=
-  begin
-    admit,
-  end
+
+  
   -/
   
+  extract_goal,
+  sorry,
+  rintros i, dsimp at i,
+  dsimp,
+  sorry,  
+
 end
 
-#check add_assoc_relabelling
+-- def mul_one_relabelling' : Π (x : pgame), relabelling (x * 1) x
+-- | (mk xl xr xL xR) :=
+-- begin 
+--   let x:= (mk xl xr xL xR),
+--   refine ⟨_,_,_,_⟩,
+--   have := (@left_moves_mul x 1),
+--   --rw one_left_moves at *; rw one_right_moves at *,
+--   dsimp[one_left_moves, one_right_moves] at *,
+--   { 
+--   calc 
+--   (x * 1).left_moves ≃ x.left_moves × punit ⊕ x.right_moves × pempty : left_moves_mul
+--   ... ≃ x.left_moves × punit ⊕ pempty : by refine equiv.sum_congr (equiv.cast rfl) (equiv.prod_pempty _)
+--   ... ≃ x.left_moves × punit : equiv.sum_pempty (left_moves x × punit)
+--   ... ≃ x.left_moves : equiv.prod_punit (left_moves x),
+--   },
+--   { 
+--   calc 
+--     (x * 1).right_moves ≃ x.left_moves × pempty ⊕ x.right_moves × punit : right_moves_mul
+--     ... ≃ pempty ⊕ x.right_moves × punit : by refine equiv.sum_congr (equiv.prod_pempty _) (equiv.cast rfl)
+--     ... ≃ x.right_moves × punit : equiv.pempty_sum (right_moves x × punit)
+--     ... ≃ x.right_moves : equiv.prod_punit (right_moves x),
+--   },
+--   dsimp at *,
+--   rintro (⟨i, ⟨⟩⟩ | ⟨i, ⟨⟩⟩),  
+-- end
+
+local infix ` ~ ` := pgame.relabelling
+
+theorem add_congr_relabelling {w x y z : pgame} 
+  (h₁ : w ~ x) (h₂ : y ~ z) : w + y ~ x + z :=
+begin 
+  sorry,
+end 
+#check pgame.neg
+theorem neg_congr_relabelling {x y : pgame} 
+  (h₁ : x ~ y) : -x ~ -y :=
+begin
+  
+  cases h₁ with _ _ hl hr hL hR,
+  fsplit, 
+  dsimp [has_neg.neg, neg] at *,
+  exact hr,
+  
+  sorry,
+end
+
+theorem sub_congr_relabelling {w x y z : pgame} 
+  (h₁ : w ~ x) (h₂ : y ~ z) : w - y ~ x - z :=
+add_congr_relabelling h₁ (neg_congr_relabelling h₂)
+
+lemma add_neg_comm {a b c x y z : pgame} : (a ~ x) → (b ~ y) → (c ~ z) → (a + b - c ~ y + x - z) := 
+begin 
+  intros h1 h2 h3,
+  suffices : a + b ~ y + x, by exact sub_congr_relabelling this h3,
+  calc 
+    a + b 
+        ~ a + y : add_congr_relabelling (relabelling.refl a) h2
+    ... ~ x + y : add_congr_relabelling h1 (relabelling.refl y)
+    ... ~ y + x : add_comm_relabelling x y
+end
+
 def mul_comm_relabelling' (x y : pgame) : relabelling (x * y) (y * x):=
 begin
   induction x with xl xr xL xR I1 I2 generalizing y,
   induction y with yl yr yL yR J1 J2,
 
+  let x := mk xl xr xL xR,
+  let y := mk yl yr yL yR,
+
   refine ⟨_,_,_,_⟩,
 
-  fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
-    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl,
+  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
+    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
 
-  fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
-    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl,
+  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
+    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
 
-  rintro (⟨i, j⟩ | ⟨i, j⟩),
-  dsimp, 
-  clear I2 J2,
-  have := J1 j,
-  have := I1 i (mk yl yr yL yR),
-  have := I1 i (yL j),
-  sorry,
-  dsimp,
-  sorry,
+  { rintro (⟨i, j⟩ | ⟨i, j⟩),
+    { exact add_neg_comm (I1 i y) (J1 j) (I1 i (yL j)) },
+    { exact add_neg_comm (I2 i y) (J2 j) (I2 i (yR j)) }},
 
-  rintro (⟨i, j⟩ | ⟨i, j⟩),
-  dsimp,
-  sorry,
-  dsimp,
-  sorry,
+  { rintro (⟨i, j⟩ | ⟨i, j⟩),
+    { exact add_neg_comm (I2 j y) (J1 i) (I2 j (yL i)) },
+    { exact add_neg_comm (I1 j y) (J2 i) (I1 j (yR i)) }}
 end
 
 -- `x*y` has exactly the same moves as `y*x`.
