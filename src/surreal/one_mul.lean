@@ -46,6 +46,39 @@ end pgame
 
 
 
+def mul_one_relabelling' : Π (x : pgame), relabelling (x * 1) x
+| (mk xl xr xL xR) :=
+begin 
+  fsplit,
+  fsplit, 
+  rintro (⟨i, ⟨⟩⟩ | ⟨_, ⟨⟩⟩), exact i,
+
+  exact λ i, sum.inl (i, punit.star), 
+  
+  rintros ⟨_, ⟨⟩⟩, refl,
+  rcases x with ⟨_, ⟨⟩⟩,
+  intros i, refl,
+
+  fsplit,
+  rintro (⟨_, ⟨⟩⟩ | ⟨i, ⟨⟩⟩), exact i,
+
+  exact λ i, sum.inr (i, punit.star),
+
+  rintros (⟨_, ⟨⟩⟩| ⟨_, ⟨⟩⟩), refl,
+  
+  rintros _, refl,
+
+  rintros (⟨i, ⟨⟩⟩|⟨i, ⟨⟩⟩),
+  dsimp,
+  sorry,
+  rintros i,
+  dsimp at i,
+  dsimp,
+  have := mul_one_relabelling (xR i),
+sorry,  
+
+end
+
 
 
 
