@@ -60,6 +60,8 @@ by { cases x, cases y, refl, }
    = x.move_right i * y + x * y.move_left j - x.move_right i * y.move_left j
 := by {cases x, cases y, refl}
 
+/-- If `w` has the same moves as `x` and `y` has the same moves as `z`,
+    then `w + y` has the same moves as `x + z`. -/
 def add_congr_relabelling : ∀ {w x y z : pgame},
 w.relabelling x → y.relabelling z → (w + y).relabelling (x + z)
 | (mk wl wr wL wR) (mk xl xr xL xR) (mk yl yr yL yR) (mk zl zr zL zR)
@@ -103,16 +105,21 @@ begin
 end
 using_well_founded { dec_tac := pgame_wf_tac }
 
+/-- If `x` has the same moves as `y`, then `-x` has the sames moves as `-y`. -/
 def neg_congr_relabelling : ∀ {x y : pgame}, x.relabelling y → (-x).relabelling (-y)
 | (mk xl xr xL xR) (mk yl yr yL yR) ⟨L_equiv, R_equiv, L_relabelling, R_relabelling⟩ :=
   ⟨R_equiv, L_equiv,
     λ i, neg_congr_relabelling (by simpa using R_relabelling (R_equiv i)),
     λ i, neg_congr_relabelling (by simpa using L_relabelling (L_equiv.symm i))⟩
 
+/-- If `w` has the same moves as `x` and `y` has the same moves as `z`,
+    then `w - y` has the same moves as `x - z`. -/
 theorem sub_congr_relabelling {w x y z : pgame} 
   (h₁ : w.relabelling x) (h₂ : y.relabelling z) : (w - y).relabelling (x - z) :=
 add_congr_relabelling h₁ (neg_congr_relabelling h₂)
 
+/-- If `a` has the same moves as `x`, `b` has the same moves as `y`,
+    and `c` has the same moves as `z`, then `a + b - c` has the same moves as `y + x - z`. -/
 lemma add_neg_comm {a b c x y z : pgame}
   (h₁ : a.relabelling x) (h₂ : b.relabelling y) (h₃ : c.relabelling z) :
   (a + b - c).relabelling (y + x - z) := 
