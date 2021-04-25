@@ -120,7 +120,7 @@ add_congr_relabelling h₁ (neg_congr_relabelling h₂)
 
 /-- If `a` has the same moves as `x`, `b` has the same moves as `y`,
 and `c` has the same moves as `z`, then `a + b - c` has the same moves as `y + x - z`. -/
-lemma add_neg_comm {a b c x y z : pgame}
+lemma add_sub_comm {a b c x y z : pgame}
   (h₁ : a.relabelling x) (h₂ : b.relabelling y) (h₃ : c.relabelling z) :
   (a + b - c).relabelling (y + x - z) := 
 sub_congr_relabelling
@@ -143,12 +143,12 @@ begin
     exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
 
   { rintro (⟨i, j⟩ | ⟨i, j⟩),
-    { exact add_neg_comm (I1 i (mk yl yr yL yR)) (J1 j) (I1 i (yL j)) },
-    { exact add_neg_comm (I2 i (mk yl yr yL yR)) (J2 j) (I2 i (yR j)) }},
+    { exact add_sub_comm (I1 i (mk yl yr yL yR)) (J1 j) (I1 i (yL j)) },
+    { exact add_sub_comm (I2 i (mk yl yr yL yR)) (J2 j) (I2 i (yR j)) }},
 
   { rintro (⟨i, j⟩ | ⟨i, j⟩),
-    { exact add_neg_comm (I2 j (mk yl yr yL yR)) (J1 i) (I2 j (yL i)) },
-    { exact add_neg_comm (I1 j (mk yl yr yL yR)) (J2 i) (I1 j (yR i)) }}
+    { exact add_sub_comm (I2 j (mk yl yr yL yR)) (J1 i) (I2 j (yL i)) },
+    { exact add_sub_comm (I1 j (mk yl yr yL yR)) (J2 i) (I1 j (yR i)) }}
 end
 
 /-- `x * y` is equivalent to `y * x`. -/
