@@ -69,7 +69,7 @@ w.relabelling x → y.relabelling z → (w + y).relabelling (x + z)
   ⟨L_equiv₂, R_equiv₂, L_relabelling₂, R_relabelling₂⟩ :=
 begin
   refine ⟨_,_,_,_⟩,
-  { fsplit,
+  { fsplit, -- left moves
     { rintro (i|j),
       { exact sum.inl (L_equiv₁ i) },
       { exact sum.inr (L_equiv₂ j) }},
@@ -78,7 +78,7 @@ begin
       { exact sum.inr (L_equiv₂.symm j) }},
     { rintro (_|_); simp only [equiv.symm_apply_apply] },
     { rintro (_|_); simp only [equiv.apply_symm_apply] }},
-  { fsplit,
+  { fsplit, -- right moves
     { rintro (i|j),
       { exact sum.inl (R_equiv₁ i) },
       { exact sum.inr (R_equiv₂ j) }},
@@ -87,15 +87,14 @@ begin
       { exact sum.inr (R_equiv₂.symm j) }},
     { rintro (_|_); simp only [equiv.symm_apply_apply] },
     { rintro (_|_); simp only [equiv.apply_symm_apply] }},
-  { rintro (i|j), 
+  { rintro (i|j), -- move left
     { exact add_congr_relabelling 
         (L_relabelling₁ i) 
         (⟨L_equiv₂, R_equiv₂, L_relabelling₂, R_relabelling₂⟩) },
     { exact add_congr_relabelling 
         (⟨L_equiv₁, R_equiv₁, L_relabelling₁, R_relabelling₁⟩) 
         (L_relabelling₂ j) }},
-        
-  { rintro (i|j),
+  { rintro (i|j), -- move right
     { exact add_congr_relabelling 
         (R_relabelling₁ i) 
         (⟨L_equiv₂, R_equiv₂, L_relabelling₂, R_relabelling₂⟩) },
@@ -124,28 +123,19 @@ lemma add_sub_comm {a b c x y z : pgame}
   (h₁ : a.relabelling x) (h₂ : b.relabelling y) (h₃ : c.relabelling z) :
   (a + b - c).relabelling (y + x - z) := 
 sub_congr_relabelling
-  (relabelling.trans
-    (add_comm_relabelling a b)
-    (add_congr_relabelling h₂ h₁)) h₃
+  (relabelling.trans (add_comm_relabelling a b) (add_congr_relabelling h₂ h₁)) h₃
 
 /-- `x * y` has exactly the same moves as `y * x`. -/
 theorem mul_comm_relabelling (x y : pgame) : (x * y).relabelling (y * x):=
 begin
   induction x with xl xr xL xR I1 I2 generalizing y,
   induction y with yl yr yL yR J1 J2,
-
   refine ⟨_,_,_,_⟩,
-
-  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
-    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
-
-  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); 
-    exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
-
+  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
+  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
   { rintro (⟨i, j⟩ | ⟨i, j⟩),
     { exact add_sub_comm (I1 i (mk yl yr yL yR)) (J1 j) (I1 i (yL j)) },
     { exact add_sub_comm (I2 i (mk yl yr yL yR)) (J2 j) (I2 i (yR j)) }},
-
   { rintro (⟨i, j⟩ | ⟨i, j⟩),
     { exact add_sub_comm (I2 j (mk yl yr yL yR)) (J1 i) (I2 j (yL i)) },
     { exact add_sub_comm (I1 j (mk yl yr yL yR)) (J2 i) (I1 j (yR i)) }}
@@ -158,9 +148,9 @@ equiv_of_relabelling (mul_comm_relabelling x y)
 /-- `x * 0` has exactly the same moves as `0`. -/
 theorem mul_zero_relabelling : Π (x : pgame), relabelling (x * 0) 0
 | (mk xl xr xL xR) :=
-⟨by fsplit; rintro (⟨_, ⟨⟩⟩ | ⟨_, ⟨⟩⟩),
- by fsplit; rintro (⟨_, ⟨⟩⟩ | ⟨_, ⟨⟩⟩), 
- by rintro (⟨_, ⟨⟩⟩ | ⟨_, ⟨⟩⟩),
+⟨by fsplit; rintro (⟨_,⟨⟩⟩ | ⟨_,⟨⟩⟩),
+ by fsplit; rintro (⟨_,⟨⟩⟩ | ⟨_,⟨⟩⟩), 
+ by rintro (⟨_,⟨⟩⟩ | ⟨_,⟨⟩⟩),
  by rintro ⟨⟩⟩
 
 /-- `x * 0` is equivalent to `0`. -/
@@ -170,8 +160,8 @@ equiv_of_relabelling (mul_zero_relabelling x)
 /-- `0 * x` has exactly the same moves as `0`. -/
 theorem zero_mul_relabelling : Π (x : pgame), relabelling (0 * x) 0
 | (mk xl xr xL xR) :=
-⟨by fsplit; rintro (⟨⟨⟩, _⟩ | ⟨⟨⟩, _⟩),
- by fsplit; rintro (⟨⟨⟩, _⟩ | ⟨⟨⟩, _⟩),
+⟨by fsplit; rintro (⟨⟨⟩,_⟩ | ⟨⟨⟩,_⟩),
+ by fsplit; rintro (⟨⟨⟩,_⟩ | ⟨⟨⟩,_⟩),
  by rintro (⟨⟨⟩,_⟩ | ⟨⟨⟩,_⟩),
  by rintro ⟨⟩⟩ 
 
