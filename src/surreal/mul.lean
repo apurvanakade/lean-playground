@@ -2,99 +2,75 @@ import set_theory.surreal
 open pgame
 namespace pgame
 
+universe u
+
 /-- An explicit description of the moves for Left in `x * y`. -/
-def left_moves_mul {x y : pgame} : (x * y).left_moves 
+def left_moves_mul {x y : pgame.{u}} : (x * y).left_moves 
   ≃ x.left_moves × y.left_moves ⊕ x.right_moves × y.right_moves :=
 by { cases x, cases y, refl, }
 
 /-- An explicit description of the moves for Right in `x * y`. -/
-def right_moves_mul {x y : pgame} : (x * y).right_moves 
+def right_moves_mul {x y : pgame.{u}} : (x * y).right_moves 
   ≃ x.left_moves × y.right_moves ⊕ x.right_moves × y.left_moves :=
 by { cases x, cases y, refl, }
 
 @[simp] lemma mk_mul_move_left_inl {xl xr yl yr} {xL xR yL yR} {i j} :
   (mk xl xr xL xR * mk yl yr yL yR).move_left (sum.inl (i,j))
-  = (mk xl xr xL xR).move_left i * (mk yl yr yL yR)
-    + (mk xl xr xL xR) * (mk yl yr yL yR).move_left j
-    - (mk xl xr xL xR).move_left i * (mk yl yr yL yR).move_left j
+  = xL i * (mk yl yr yL yR) + (mk xl xr xL xR) * yL j - xL i * yL j
 := rfl
 
-@[simp] lemma mul_move_left_inl {x y : pgame} {i j} :
+@[simp] lemma mul_move_left_inl {x y : pgame.{u}} {i j} :
    (x * y).move_left ((@left_moves_mul x y).symm (sum.inl (i,j)))
    = x.move_left i * y + x * y.move_left j - x.move_left i * y.move_left j
 := by {cases x, cases y, refl} 
 
 @[simp] lemma mk_mul_move_left_inr {xl xr yl yr} {xL xR yL yR} {i j} :
   (mk xl xr xL xR * mk yl yr yL yR).move_left (sum.inr (i,j))
-  = (mk xl xr xL xR).move_right i * (mk yl yr yL yR)
-    + (mk xl xr xL xR) * (mk yl yr yL yR).move_right j
-    - (mk xl xr xL xR).move_right i * (mk yl yr yL yR).move_right j
+  = xR i * (mk yl yr yL yR) + (mk xl xr xL xR) * yR j - xR i * yR j
 := rfl
 
-@[simp] lemma mul_move_left_inr {x y : pgame} {i j} :
+@[simp] lemma mul_move_left_inr {x y : pgame.{u}} {i j} :
    (x * y).move_left ((@left_moves_mul x y).symm (sum.inr (i,j)))
    = x.move_right i * y + x * y.move_right j - x.move_right i * y.move_right j
 := by {cases x, cases y, refl}
 
 @[simp] lemma mk_mul_move_right_inl {xl xr yl yr} {xL xR yL yR} {i j} :
   (mk xl xr xL xR * mk yl yr yL yR).move_right (sum.inl (i,j))
-  = (mk xl xr xL xR).move_left i * (mk yl yr yL yR)
-    + (mk xl xr xL xR) * (mk yl yr yL yR).move_right j
-    - (mk xl xr xL xR).move_left i * (mk yl yr yL yR).move_right j
+  = xL i * (mk yl yr yL yR) + (mk xl xr xL xR) * yR j - xL i * yR j
 := rfl
 
-@[simp] lemma mul_move_right_inl {x y : pgame} {i j} :
+@[simp] lemma mul_move_right_inl {x y : pgame.{u}} {i j} :
    (x * y).move_right ((@right_moves_mul x y).symm (sum.inr (i, j)))
    = x.move_right i * y + x * y.move_left j - x.move_right i * y.move_left j
 := by {cases x, cases y, refl} 
 
 @[simp] lemma mk_mul_move_right_inr {xl xr yl yr} {xL xR yL yR} {i j} :
   (mk xl xr xL xR * mk yl yr yL yR).move_right (sum.inr (i,j))
-  = (mk xl xr xL xR).move_right i * (mk yl yr yL yR)
-    + (mk xl xr xL xR) * (mk yl yr yL yR).move_left j
-    - (mk xl xr xL xR).move_right i * (mk yl yr yL yR).move_left j
+  = xR i * (mk yl yr yL yR) + (mk xl xr xL xR) * yL j - xR i * yL j
 := rfl
 
-@[simp] lemma mul_move_right_inr {x y : pgame} {i j} :
+@[simp] lemma mul_move_right_inr {x y : pgame.{u}} {i j} :
    (x * y).move_right ((@right_moves_mul x y).symm (sum.inr (i,j)))
    = x.move_right i * y + x * y.move_left j - x.move_right i * y.move_left j
 := by {cases x, cases y, refl}
 
 /-- If `w` has the same moves as `x` and `y` has the same moves as `z`,
     then `w + y` has the same moves as `x + z`. -/
-def add_congr_relabelling : ∀ {w x y z : pgame},
+def add_congr_relabelling : ∀ {w x y z : pgame.{u}},
 w.relabelling x → y.relabelling z → (w + y).relabelling (x + z)
 | (mk wl wr wL wR) (mk xl xr xL xR) (mk yl yr yL yR) (mk zl zr zL zR)
   ⟨L_equiv₁, R_equiv₁, L_relabelling₁, R_relabelling₁⟩
   ⟨L_equiv₂, R_equiv₂, L_relabelling₂, R_relabelling₂⟩ :=
 begin
-  refine ⟨_,_,_,_⟩,
-  { fsplit, -- left moves
-    { rintro (i|j),
-      { exact sum.inl (L_equiv₁ i) },
-      { exact sum.inr (L_equiv₂ j) }},
-    { rintro (i|j),
-      { exact sum.inl (L_equiv₁.symm i) },
-      { exact sum.inr (L_equiv₂.symm j) }},
-    { rintro (_|_); simp only [equiv.symm_apply_apply] },
-    { rintro (_|_); simp only [equiv.apply_symm_apply] }},
-  { fsplit, -- right moves
-    { rintro (i|j),
-      { exact sum.inl (R_equiv₁ i) },
-      { exact sum.inr (R_equiv₂ j) }},
-    { rintro (i|j),
-      { exact sum.inl (R_equiv₁.symm i) },
-      { exact sum.inr (R_equiv₂.symm j) }},
-    { rintro (_|_); simp only [equiv.symm_apply_apply] },
-    { rintro (_|_); simp only [equiv.apply_symm_apply] }},
-  { rintro (i|j), -- move left
+  refine ⟨equiv.sum_congr L_equiv₁ L_equiv₂, equiv.sum_congr R_equiv₁ R_equiv₂,_,_⟩,
+  { rintro (i|j),
     { exact add_congr_relabelling 
         (L_relabelling₁ i) 
         (⟨L_equiv₂, R_equiv₂, L_relabelling₂, R_relabelling₂⟩) },
     { exact add_congr_relabelling 
         (⟨L_equiv₁, R_equiv₁, L_relabelling₁, R_relabelling₁⟩) 
         (L_relabelling₂ j) }},
-  { rintro (i|j), -- move right
+  { rintro (i|j),
     { exact add_congr_relabelling 
         (R_relabelling₁ i) 
         (⟨L_equiv₂, R_equiv₂, L_relabelling₂, R_relabelling₂⟩) },
@@ -105,7 +81,7 @@ end
 using_well_founded { dec_tac := pgame_wf_tac }
 
 /-- If `x` has the same moves as `y`, then `-x` has the sames moves as `-y`. -/
-def neg_congr_relabelling : ∀ {x y : pgame}, x.relabelling y → (-x).relabelling (-y)
+def neg_congr_relabelling : ∀ {x y : pgame.{u}}, x.relabelling y → (-x).relabelling (-y)
 | (mk xl xr xL xR) (mk yl yr yL yR) ⟨L_equiv, R_equiv, L_relabelling, R_relabelling⟩ :=
   ⟨R_equiv, L_equiv,
     λ i, neg_congr_relabelling (by simpa using R_relabelling (R_equiv i)),
@@ -113,32 +89,45 @@ def neg_congr_relabelling : ∀ {x y : pgame}, x.relabelling y → (-x).relabell
 
 /-- If `w` has the same moves as `x` and `y` has the same moves as `z`,
 then `w - y` has the same moves as `x - z`. -/
-theorem sub_congr_relabelling {w x y z : pgame} 
+theorem sub_congr_relabelling {w x y z : pgame.{u}} 
   (h₁ : w.relabelling x) (h₂ : y.relabelling z) : (w - y).relabelling (x - z) :=
 add_congr_relabelling h₁ (neg_congr_relabelling h₂)
 
 /-- If `a` has the same moves as `x`, `b` has the same moves as `y`,
+and `c` has the same moves as `z`, then `a + b - c` has the same moves as `x + y - z`. -/
+lemma add_sub_relabelling {a b c x y z : pgame.{u}}
+  (h₁ : a.relabelling x) (h₂ : b.relabelling y) (h₃ : c.relabelling z) :
+  (a + b - c).relabelling (x + y - z) := 
+sub_congr_relabelling (add_congr_relabelling h₁ h₂) h₃
+  
+/-- If `a` has the same moves as `x`, `b` has the same moves as `y`,
 and `c` has the same moves as `z`, then `a + b - c` has the same moves as `y + x - z`. -/
-lemma add_sub_comm {a b c x y z : pgame}
+lemma add_comm_sub_relabelling {a b c x y z : pgame.{u}}
   (h₁ : a.relabelling x) (h₂ : b.relabelling y) (h₃ : c.relabelling z) :
   (a + b - c).relabelling (y + x - z) := 
 sub_congr_relabelling
   (relabelling.trans (add_comm_relabelling a b) (add_congr_relabelling h₂ h₁)) h₃
 
 /-- `x * y` has exactly the same moves as `y * x`. -/
-theorem mul_comm_relabelling (x y : pgame) : (x * y).relabelling (y * x):=
+theorem mul_comm_relabelling (x y : pgame.{u}) : (x * y).relabelling (y * x):=
 begin
-  induction x with xl xr xL xR I1 I2 generalizing y,
-  induction y with yl yr yL yR J1 J2,
-  refine ⟨_,_,_,_⟩,
-  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
-  { fsplit; rintro (⟨i, j⟩ | ⟨i, j⟩); exact sum.inl (j,i) <|> exact sum.inr (j,i) <|> refl },
+  induction x with xl xr xL xR IHxl IHxr generalizing y,
+  induction y with yl yr yL yR IHyl IHyr,
+  let x := mk xl xr xL xR,
+  let y := mk yl yr yL yR,
+  refine ⟨equiv.sum_congr (equiv.prod_comm _ _) (equiv.prod_comm _ _), _ ,_,_⟩,
+  calc 
+   (x * y).right_moves
+       ≃ xl × yr ⊕ xr × yl : by refl
+   ... ≃ xr × yl ⊕ xl × yr : equiv.sum_comm _ _
+   ... ≃ yl × xr ⊕ yr × xl : equiv.sum_congr (equiv.prod_comm _ _) (equiv.prod_comm _ _)
+   ... ≃ (y * x).right_moves : by refl,
   { rintro (⟨i, j⟩ | ⟨i, j⟩),
-    { exact add_sub_comm (I1 i (mk yl yr yL yR)) (J1 j) (I1 i (yL j)) },
-    { exact add_sub_comm (I2 i (mk yl yr yL yR)) (J2 j) (I2 i (yR j)) }},
+    { exact add_comm_sub_relabelling (IHxl i y) (IHyl j) (IHxl i (yL j)) },
+    { exact add_comm_sub_relabelling (IHxr i y) (IHyr j) (IHxr i (yR j)) }},
   { rintro (⟨i, j⟩ | ⟨i, j⟩),
-    { exact add_sub_comm (I2 j (mk yl yr yL yR)) (J1 i) (I2 j (yL i)) },
-    { exact add_sub_comm (I1 j (mk yl yr yL yR)) (J2 i) (I1 j (yR i)) }}
+    { exact add_comm_sub_relabelling (IHxr j y) (IHyl i) (IHxr j (yL i)) },
+    { exact add_comm_sub_relabelling (IHxl j y) (IHyr i) (IHxl j (yR i)) }}
 end
 
 /-- `x * y` is equivalent to `y * x`. -/
