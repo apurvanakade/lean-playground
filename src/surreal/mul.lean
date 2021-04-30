@@ -1,4 +1,5 @@
 import set_theory.surreal
+import tactic
 open pgame
 namespace pgame
 
@@ -55,7 +56,7 @@ by { cases x, cases y, refl, }
 := by {cases x, cases y, refl}
 
 /-- If `w` has the same moves as `x` and `y` has the same moves as `z`,
-    then `w + y` has the same moves as `x + z`. -/
+then `w + y` has the same moves as `x + z`. -/
 def add_congr_relabelling : ∀ {w x y z : pgame.{u}},
 w.relabelling x → y.relabelling z → (w + y).relabelling (x + z)
 | (mk wl wr wL wR) (mk xl xr xL xR) (mk yl yr yL yR) (mk zl zr zL zR)
@@ -81,7 +82,7 @@ end
 using_well_founded { dec_tac := pgame_wf_tac }
 
 /-- If `x` has the same moves as `y`, then `-x` has the sames moves as `-y`. -/
-def neg_congr_relabelling : ∀ {x y : pgame.{u}}, x.relabelling y → (-x).relabelling (-y)
+def neg_congr_relabelling : ∀ {x y : pgame}, x.relabelling y → (-x).relabelling (-y)
 | (mk xl xr xL xR) (mk yl yr yL yR) ⟨L_equiv, R_equiv, L_relabelling, R_relabelling⟩ :=
   ⟨R_equiv, L_equiv,
     λ i, neg_congr_relabelling (by simpa using R_relabelling (R_equiv i)),
@@ -89,7 +90,7 @@ def neg_congr_relabelling : ∀ {x y : pgame.{u}}, x.relabelling y → (-x).rela
 
 /-- If `w` has the same moves as `x` and `y` has the same moves as `z`,
 then `w - y` has the same moves as `x - z`. -/
-theorem sub_congr_relabelling {w x y z : pgame.{u}} 
+theorem sub_congr_relabelling {w x y z : pgame} 
   (h₁ : w.relabelling x) (h₂ : y.relabelling z) : (w - y).relabelling (x - z) :=
 add_congr_relabelling h₁ (neg_congr_relabelling h₂)
 
@@ -158,4 +159,74 @@ theorem zero_mul_relabelling : Π (x : pgame), relabelling (0 * x) 0
 theorem zero_mul_equiv (x : pgame) : (0 * x).equiv 0 :=
 equiv_of_relabelling (zero_mul_relabelling x)
 
+#check add_assoc_relabelling
+
+/-- `(x + y) + z` has exactly the same moves as `x + (y + z)`. -/
+def mul_assoc_relabelling : Π (x y z : pgame.{u}), relabelling ((x * y) * z) (x * (y * z))
+| (mk xl xr xL xR) (mk yl yr yL yR) (mk zl zr zL zR) :=
+begin
+  -- refine ⟨equiv.prod_assoc _ _ _, equiv.prod_assoc _ _ _, _, _⟩,
+    refine ⟨_,_,_,_⟩,
+    fsplit,
+    rintros (⟨(⟨i,j⟩|⟨i,j⟩),k⟩|⟨(⟨i,j⟩|⟨i,j⟩),k⟩),
+    exact sum.inl (i, sum.inl (j, k)),
+    exact sum.inr (i, sum.inr (j, k)),
+    exact sum.inl (i, sum.inr (j, k)),
+    exact sum.inr (i, sum.inl (j, k)),
+    
+    rintros (⟨i, (⟨j,k⟩|⟨j,k⟩)⟩|⟨i,(⟨j,k⟩|⟨j,k⟩)⟩),
+    exact sum.inl (sum.inl (i,j), k),
+    exact sum.inr (sum.inl (i, j), k),
+    exact sum.inr (sum.inr (i, j), k),
+    exact sum.inl (sum.inr (i, j), k),
+
+  {tidy},
+  {tidy},
+
+  fsplit,
+  
+    rintros (⟨(⟨i,j⟩|⟨i,j⟩),k⟩|⟨(⟨i,j⟩|⟨i,j⟩),k⟩),
+    exact sum.inl (i, sum.inl (j, k)),
+    exact sum.inr (i, sum.inr (j, k)),
+    exact sum.inl (i, sum.inr (j, k)),
+    exact sum.inr (i, sum.inl (j, k)),
+    
+    rintros (⟨i, (⟨j,k⟩|⟨j,k⟩)⟩|⟨i,(⟨j,k⟩|⟨j,k⟩)⟩),
+    exact sum.inl (sum.inl (i, j), k),
+    exact sum.inr (sum.inl (i, j), k),
+    exact sum.inr (sum.inr (i, j), k),
+    exact sum.inl (sum.inr (i, j), k),
+
+  {tidy},
+  {tidy},
+
+    rintros (⟨(⟨i,j⟩|⟨i,j⟩),k⟩|⟨(⟨i,j⟩|⟨i,j⟩),k⟩),
+    
+  dsimp,
+   -- have := mul_assoc_relabelling (xL i) (yL j) (zL k),
+     
+
+    -- calc
+    --   (xl × yl ⊕ xr × yr) × zl ⊕ (xl × yr ⊕ xr × yl) × zr
+    --     ≃ xl × (yl × zl ⊕ yr × zr) ⊕ xr × (yl × zr ⊕ yr × zl) : sorry,
+end
+-- instance : ring surreal := { add := _,
+--   add_assoc := _,
+--   zero := _,
+--   zero_add := _,
+--   add_zero := _,
+--   neg := _,
+--   sub := _,
+--   sub_eq_add_neg := _,
+--   add_left_neg := _,
+--   add_comm := _,
+--   mul := _,
+--   mul_assoc := _,
+--   one := _,
+--   one_mul := _,
+--   mul_one := _,
+--   left_distrib := _,
+--   right_distrib := _ }
+
 end pgame
+
