@@ -1,38 +1,55 @@
-import tactic
+import set_theory.surreal
 
-meta def stupid_tactic : tactic unit :=
-`[assumption]
-    <|> (do `[apply sum.inr], stupid_tactic )
-    <|> (do `[apply sum.inl], stupid_tactic )
-    <|> (do `[apply prod.mk], stupid_tactic, stupid_tactic )
+namespace pgame
+open pgame 
 
-example (xl yl zl xr yr zr : Type) :
-  (xl × yl ⊕ xr × yr) × zl ⊕ (xl × yr ⊕ xr × yl) × zr
-  ≃ xl × (yl × zl ⊕ yr × zr) ⊕ xr × (yl × zr ⊕ yr × zl) :=
-{ to_fun    := by rintro (⟨⟨_, _⟩ | ⟨_, _⟩, _⟩ | ⟨⟨_, _⟩ | ⟨_, _⟩, _⟩); stupid_tactic,
-  left_inv  := by rintro (⟨⟨_, _⟩ | ⟨_, _⟩, _⟩ | ⟨⟨_, _⟩ | ⟨_, _⟩, _⟩); refl,
-  inv_fun   := by rintro (⟨_, ⟨_, _⟩ | ⟨_, _⟩⟩ | ⟨_, ⟨_, _⟩ | ⟨_, _⟩⟩); stupid_tactic,
-  right_inv := by rintro (⟨_, ⟨_, _⟩ | ⟨_, _⟩⟩ | ⟨_, ⟨_, _⟩ | ⟨_, _⟩⟩); refl }
+@[trans] theorem lt_trans {x y z : pgame} : x < y → y < z → x < z :=
+sorry
 
-example (xl yl zl xr yr zr : Type) :
-  (xl × yl ⊕ xr × yr) × zl ⊕ (xl × yr ⊕ xr × yl) × zr
-  ≃ xl × (yl × zl ⊕ yr × zr) ⊕ xr × (yl × zr ⊕ yr × zl) :=
-begin
-fsplit,
-  simp[equiv.sum_comm, equiv.prod_assoc, equiv.prod_sum_distrib, equiv.sum_prod_distrib],
-end
+theorem numeric_sub : Π {x y : pgame} (ox : numeric x) (oy : numeric y), numeric (x - y) := sorry
 
-example (xl yl zl xr yr zr : Prop) :
-  (xl ∧ yl) ∧ zl ∨ (xl ∧ yr) ∧ zr
-  = xl ∧ (yr ∧ zr) ∨ xr ∧ (yr ∧ zl) :=
-begin
-  tauto,
+
+def foobar : Π {x y : pgame} (ox : numeric x) (oy : numeric y), numeric (x * y) 
+| (mk xl xr xL xR) (mk yl yr yL yR) ox oy:=
+begin 
+  let x := mk xl xr xL xR,
+  let y := mk yl yr yL yR,
+  refine ⟨_,_,_⟩,
+  { 
+  intros i j,
+  suffices : ((x * y).move_left i < x * y) ∧ (x * y < (x * y).move_right j),
+  apply pgame.lt_trans this.1 this.2,
+  split, 
+  rcases i with ⟨i₁,i₂⟩,
+  rcases j with ⟨j₁,j₂⟩,
+  repeat {sorry},
+   },
+   
+  rintro (⟨i_fst, i_snd⟩ | ⟨i_fst, i_snd⟩),
+
+  refine numeric_sub (numeric_add _ _) _,
+  apply foobar (ox.2.1 i_fst) oy,
+  apply foobar ox (oy.2.1 i_snd),
+  apply foobar (ox.2.1 i_fst) (oy.2.1 i_snd),
+
+  refine numeric_sub (numeric_add _ _) _,
+  apply foobar (ox.2.2 i_fst) oy,
+  apply foobar ox (oy.2.2 i_snd),
+  apply foobar (ox.2.2 i_fst) (oy.2.2 i_snd),
+
+  rintro (⟨i_fst, i_snd⟩ | ⟨i_fst, i_snd⟩),
   
-end
+  refine numeric_sub (numeric_add _ _) _,
+  apply foobar (ox.2.1 i_fst) oy,
+  apply foobar ox (oy.2.2 i_snd),
+  apply foobar (ox.2.1 i_fst) (oy.2.2 i_snd),
 
-example (a b c x y z : Prop) :
-  (a ∧ b) ∧ c → a ∧ (b ∧ c) :=
-begin
-  tauto,
-  
-end
+  refine numeric_sub (numeric_add _ _) _,
+  apply foobar (ox.2.2 i_fst) oy,
+  apply foobar ox (oy.2.1 i_snd),
+  apply foobar (ox.2.2 i_fst) (oy.2.1 i_snd),
+end 
+using_well_founded { dec_tac := pgame_wf_tac }
+
+
+end pgame

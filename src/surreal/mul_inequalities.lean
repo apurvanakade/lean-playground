@@ -83,9 +83,53 @@ begin
   sorry, -- most complex case
 
 end
-
-
 #check @add_le_add_right
+
+#check @mk_mul_move_left_inl
+
+/-- An explicit description of the moves for Right in `x * y`. -/
+
+lemma mk_mul_move_left_inl' {xl xr yl yr} {xL xR yL yR} {i j} :
+  (mk xl xr xL xR * mk yl yr yL yR).move_left (sum.inl (i,j))
+  = (xL i - mk xl xr xL xR) * (mk yl yr yL yR - yL j) + mk xl xr xL xR * mk yl yr yL yR := 
+sorry
+
+lemma mul_move_left_inl' {x y : pgame} {i j} :
+   (x * y).move_left ((@left_moves_mul x y).symm (sum.inl (i,j)))
+   = (x.move_left i - x) * (y - y.move_left j) + x * y :=
+sorry
+
+lemma mk_mul_move_left_inr' {xl xr yl yr} {xL xR yL yR} {i j} :
+  (mk xl xr xL xR * mk yl yr yL yR).move_left (sum.inr (i,j))
+  = (xR i - mk xl xr xL xR) * (mk yl yr yL yR - yR j) + mk xl xr xL xR * mk yl yr yL yR :=
+sorry
+
+lemma mul_move_left_inr' {x y : pgame} {i j} :
+   (x * y).move_left ((@left_moves_mul x y).symm (sum.inr (i,j)))
+   = (x.move_right i - x) * (y - y.move_right j) + x * y := 
+sorry
+
+lemma mk_mul_move_right_inl' {xl xr yl yr} {xL xR yL yR} {i j} :
+  (mk xl xr xL xR * mk yl yr yL yR).move_right (sum.inl (i,j))
+  = (xL i - mk xl xr xL xR) * (mk yl yr yL yR - yR j) + mk xl xr xL xR * mk yl yr yL yR := 
+sorry
+
+lemma mul_move_right_inl' {x y : pgame} {i j} :
+   (x * y).move_right ((@right_moves_mul x y).symm (sum.inr (i, j)))
+   = (x.move_right i - x) * (y - y.move_left j) + x * y := 
+sorry
+
+@[simp] lemma mk_mul_move_right_inr' {xl xr yl yr} {xL xR yL yR} {i j} :
+  (mk xl xr xL xR * mk yl yr yL yR).move_right (sum.inr (i,j))
+  = (xR i - mk xl xr xL xR) * (mk yl yr yL yR - yL j) + mk xl xr xL xR * mk yl yr yL yR := 
+sorry
+
+lemma mul_move_right_inr' {x y : pgame} {i j} :
+   (x * y).move_right ((@right_moves_mul x y).symm (sum.inr (i,j)))
+   = (x.move_right i - x) * (y - y.move_left j) + x * y := 
+sorry
+
+
 
 end pgame
 /-- Definition of `x < y` on pre-games, in terms of `≤` -/
