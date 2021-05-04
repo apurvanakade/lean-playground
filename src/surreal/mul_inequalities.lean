@@ -1,9 +1,25 @@
 import set_theory.surreal
 namespace pgame
-
+universe u
 open pgame
 
 local infix ` ≈ ` := pgame.equiv
+
+theorem sub_congr {w x y z : pgame} (h₁ : w ≈ x) (h₂ : y ≈ z) : w - y ≈ x - z :=
+sorry
+
+theorem mul_congr {w x y z : pgame} (h₁ : w ≈ x) (h₂ : y ≈ z) : w * y ≈ x * z :=
+sorry
+
+lemma sub_zero_equiv (x : pgame.{u}) : x - 0 ≈ x := sorry
+#check lt_of_equiv_of_lt
+
+-- theorem lt_of_lt_of_equiv {x y z} (h₁ : x < y) (h₂ : y ≈ z) : x < z := lt_of_lt_of_le h₁ h₂.1
+-- theorem le_of_le_of_equiv {x y z} (h₁ : x ≤ y) (h₂ : y ≈ z) : x ≤ z := le_trans h₁ h₂.1
+-- theorem lt_of_equiv_of_lt {x y z} (h₁ : x ≈ y) (h₂ : y < z) : x < z := lt_of_le_of_lt h₁.1 h₂
+-- theorem le_of_equiv_of_le {x y z} (h₁ : x ≈ y) (h₂ : y ≤ z) : x ≤ z := le_trans h₁.1 h₂
+
+
 #check @zero_le 
 -- zero_le :
 --   ∀ {x : pgame},
@@ -41,51 +57,6 @@ end
 theorem zero_lt' {x : pgame} : 0 < x ↔ 
   (∃ i : x.left_moves, 0 ≤ x.move_left i) :=
 by {rw lt_def_le, dsimp, simp[forall_pempty] }
-
-lemma aux {x : pgame} (ox : numeric x) : (0 ≤ x) → (x ≈ 0) ∨ (0 < x) :=
-begin
-  
-  rintros,
-  by_cases x ≈ 0,
-  left, exact h,
-
-  unfold pgame.equiv at *,
-  push_neg at h,
-  right,
-  rw lt_iff_le_not_le numeric_zero ox,
-  split, assumption,
-  intros ᾰ_1, solve_by_elim,
-
-end  
-
-def foo : Π {x y : pgame} (ox : numeric x) (oy : numeric y) (pos_x : 0 < x) (pos_y : 0 < y), 0 < x * y
-| (mk xl xr xL xR) (mk yl yr yL yR) ox oy pos_x pos_y :=
-begin 
-  set x := mk xl xr xL xR,
-  set y := mk yl yr yL yR,
-  
-  cases zero_lt'.1 pos_x with i hi, 
-  dsimp at *,
-  cases zero_lt'.1 pos_y with j hj, 
-  dsimp at *,
-
-  rw zero_lt',
-
-  use sum.inl (i,j), 
-  dsimp,
-
-  cases aux (ox.2.1 i) hi with h₁ h₂,
-  cases aux (oy.2.1 j) hj with h₃ h₄,
-
-  sorry, -- 0
-  sorry, -- two terms 0
-
-  sorry, -- most complex case
-
-end
-#check @add_le_add_right
-
-#check @mk_mul_move_left_inl
 
 /-- An explicit description of the moves for Right in `x * y`. -/
 
@@ -128,6 +99,63 @@ lemma mul_move_right_inr' {x y : pgame} {i j} :
    (x * y).move_right ((@right_moves_mul x y).symm (sum.inr (i,j)))
    = (x.move_right i - x) * (y - y.move_left j) + x * y := 
 sorry
+
+lemma aux {x : pgame} (ox : numeric x) : (0 ≤ x) → (0 ≈ x) ∨ (0 < x) :=
+begin
+  rintros,
+  by_cases 0 ≈ x,
+  left, exact h,
+
+  unfold pgame.equiv at *,
+  push_neg at h,
+  right,
+  rw lt_iff_le_not_le numeric_zero ox,
+  split, assumption,
+  intros ᾰ_1, solve_by_elim,
+
+end  
+
+def foo : Π {x y : pgame} (ox : numeric x) (oy : numeric y), ((0 < x) → (0 < y) → 0 < x * y) ∧ (x * y).numeric
+| (mk xl xr xL xR) (mk yl yr yL yR) ox oy:=
+begin 
+  set x := mk xl xr xL xR,
+  set y := mk yl yr yL yR,
+  split,
+  
+  intros pos_x pos_y,
+  
+  cases  zero_lt'.1 pos_x with i hi, 
+  dsimp at *,
+  cases zero_lt'.1 pos_y with j hj, 
+  dsimp at *,
+
+  rw zero_lt',
+
+  use sum.inl (i,j), 
+  dsimp,
+
+  cases aux (ox.2.1 i) hi with h₁ h₂,
+  cases aux (oy.2.1 j) hj with h₃ h₄,
+  { calc 0 ≤ 0 : by refl
+       ... ≈ 0 + 0 : (add_zero_equiv 0).symm
+       ... ≈ 0 + 0 - 0 : (sub_zero_equiv _).symm
+       ... ≈ 0 * y + x * 0 - 0 * 0 : sub_congr (add_congr (zero_mul_equiv _).symm (mul_zero_equiv _).symm) (mul_zero_equiv _).symm 
+       ... ≈ xL i * y + x * yL j - xL i * yL j : by {refine sub_congr (add_congr _ _) _; refine mul_congr _ _; simpa <|> refl } },
+  { calc 0 ≤ mk xl xr xL xR * yL j : le_of_lt numeric_zero (foo ox (oy.2.1 j)).2 ((foo ox (oy.2.1 j)).1 pos_x h₄)
+       ... ≈ 0 + mk xl xr xL xR * yL j : (zero_add_equiv _).symm
+       ... ≈ 0 + mk xl xr xL xR * yL j - 0 : (sub_zero_equiv _).symm
+       ... ≈ 0 * mk yl yr yL yR + mk xl xr xL xR * yL j - 0 * yL j : sub_congr (add_congr (zero_mul_equiv _).symm (equiv_refl _)) (zero_mul_equiv _).symm
+       ... ≈ xL i * mk yl yr yL yR + mk xl xr xL xR * yL j - xL i * yL j : by {refine sub_congr (add_congr _ _) _; refine mul_congr _ _; simpa <|> refl } },
+
+  sorry, -- most complex case
+repeat {sorry},
+end
+using_well_founded { dec_tac := pgame_wf_tac }
+
+#check @add_le_add_right
+
+#check @mk_mul_move_left_inl
+
 
 
 
