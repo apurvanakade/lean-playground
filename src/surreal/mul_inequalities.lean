@@ -118,8 +118,8 @@ end
 def foo : Π {x y : pgame} (ox : numeric x) (oy : numeric y), ((0 < x) → (0 < y) → 0 < x * y) ∧ (x * y).numeric
 | (mk xl xr xL xR) (mk yl yr yL yR) ox oy:=
 begin 
-  set x := mk xl xr xL xR,
-  set y := mk yl yr yL yR,
+  let x := mk xl xr xL xR,
+  let y := mk yl yr yL yR,
   split,
   
   intros pos_x pos_y,
