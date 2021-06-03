@@ -187,18 +187,30 @@ def half_pow (n : ℕ) : surreal := ⟦⟨pgame.pow_half n, pgame.numeric_pow_ha
 theorem add_half_half_eq_one : half + half = 1 :=
 quotient.sound pgame.add_half_half_equiv_one
 
-noncomputable def dyadic' (m : ℤ) (n : ℕ) : surreal := m • (half_pow n)
+
+-- def powers (x : M) : set M := {y | ∃ n:ℕ, x^n = y}
+
+-- def powers_unique (x : ℤ) : set ℤ := { y | ∃! z : ℕ, y = x^z }
+
+-- lemma powers_unique.one_mem {x : ℤ} : (1 : ℤ) ∈ powers_unique x := ⟨0, pow_zero x, sorry⟩
+
+-- lemma powers_unique.mul_mem {x y z : ℤ} : (y ∈ powers_unique x) → (z ∈ powers_unique x) → (y * z ∈ powers_unique x) :=
+-- λ ⟨n₁, h₁⟩ ⟨n₂, h₂⟩, ⟨n₁ + n₂, by simp only [pow_add, *], sorry⟩
+
+-- def pow_two : submonoid ℤ :=
+-- { carrier  := powers_unique 2,
+--   one_mem' := powers_unique.one_mem,
+--   mul_mem' := λ _ _, powers_unique.mul_mem }
 
 def pow_two : submonoid ℤ :=
 { carrier  := powers 2,
   one_mem' := powers.one_mem,
   mul_mem' := λ _ _, powers.mul_mem }
 
-noncomputable def dyadic : ℤ × pow_two → surreal :=
-begin
-  rintro ⟨m, ⟨a, ha⟩⟩,
-  exact m • half_pow (classical.some ha),
-end
+@[simp] noncomputable def dyadic_mk' (m : ℤ) (n : ℕ) : surreal := m • half_pow n
+
+noncomputable def dyadic_mk : ℤ × pow_two → surreal :=
+λ ⟨m, ⟨a, ha⟩⟩, dyadic_mk' m (classical.some ha)
 
 theorem bar
 (m m' x : ℤ)
@@ -208,15 +220,16 @@ theorem bar
 (q : ℕ)
 (hpq : 2 ^ q = p)
 (h₂ : m * 2 ^ y = m' * 2 ^ q)
-: dyadic (m, ⟨p, q, hpq⟩) = dyadic (m', ⟨x, y, hxy⟩) :=
+: dyadic_mk (m, ⟨p, q, hpq⟩) = dyadic_mk (m', ⟨x, y, hxy⟩) :=
 begin
  sorry,
 end
 
-noncomputable def foo' : localization pow_two → surreal :=
+noncomputable def dyadic' : localization pow_two → surreal :=
 begin
   apply quotient.lift,
-  swap, exact dyadic,
+  swap,
+  exact dyadic_mk,
   rintros ⟨m, a⟩ ⟨m', a'⟩ h,
   obtain ⟨h₁, h₂⟩ := localization.r_iff_exists.1 h,
   rcases a' with ⟨x, y, hxy⟩,
@@ -224,15 +237,18 @@ begin
   rcases a with ⟨p, q, hpq⟩,
   dsimp at *,
   rw [← hxy, ← hxy', ← hpq] at *,
-  norm_num at h₂,
+  simp at h₂,
   cases h₂,
-  { rwa bar },
-  { sorry }
+  { sorry,
+  -- rwa bar
+  },
+  { have := nat.one_le_pow y' 2 (by norm_num),
+    linarith }
 end
 
-noncomputable def foo : add_monoid_hom (localization pow_two) surreal :=
-{ to_fun := foo',
-  map_zero' := by { sorry },
+noncomputable def dyadic : add_monoid_hom (localization pow_two) surreal :=
+{ to_fun := dyadic',
+  map_zero' := by {  sorry },
   map_add' := by { sorry } }
 
 end surreal
