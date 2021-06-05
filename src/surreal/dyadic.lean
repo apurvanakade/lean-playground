@@ -249,7 +249,8 @@ noncomputable def dyadic' (p : ℤ × @submonoid.powers ℤ _ 2) : surreal :=
 p.fst • pow_half (log p.snd)
 
 @[simp]
-theorem mk_dyadic {p : ℤ × @submonoid.powers ℤ _ 2} : dyadic' (p.fst, pow p.snd) = p.fst • pow_half p.snd :=
+theorem mk_dyadic {p : ℤ × @submonoid.powers ℤ _ 2} :
+  dyadic' (p.fst, pow p.snd) = p.fst • pow_half p.snd :=
 begin
   unfold dyadic',
   congr,
@@ -286,13 +287,26 @@ begin
   ring_nf,
 end
 
+example (a b : ℤ) : 0 < a → 0 ≤ b → 0 < a + b :=
+by { library_search }
+
+lemma anything (m : ℕ) (x : surreal) (hx : 0 < x) : 0 ≤ m • x :=
+begin
+  induction m with m hm,
+  { simp only [le_refl, zero_smul] },
+  { rw [succ_nsmul x m],
+    apply add_nonneg (le_of_lt hx) hm }
+
+end
+
 lemma something (m : ℕ) (x : surreal) (hm : 0 < m) : 0 < x → 0 < m • x :=
 begin
   intro hx,
-  cases m,
-  sorry,
-  clear hm,
-
+  induction m with m hm,
+  { exfalso, exact nat.lt_asymm hm hm },
+  {
+    rw [succ_nsmul x m],
+    apply lt_add_of_pos_of_le hx (anything m x hx) }
 end
 
 -- lemma smul_cancel' (m : ℕ) (x : surreal) : x = 0 ∨ m = 0 ↔ m • x = 0 :=
@@ -322,14 +336,14 @@ begin
   { simp [lem_n] },
   { unfold dyadic' at *,
     simp at *,
-    have : n + k.succ = (n + k).succ, by simp only [eq_self_iff_true],
+    have : n + k.succ = (n + k).succ, by refl,
     rw this, clear this,
-    rw [pow_half_succ (n + k)] at hk,
-    sorry
-
-    -- have := pow_half_succ k,
-
-  }
+    rw [pow_half_succ (n + k), pow_half_succ k] at hk,
+    have : 2 ^ n • 2 • pow_half (n + k).succ = 2 • 2 ^ n • pow_half (n + k).succ,
+      by { apply smul_algebra_smul_comm },
+    norm_cast at *,
+    rw this at hk,
+    exact (smul_cancel 2 (2^n • pow_half (n + k).succ) (pow_half k.succ) (by norm_num)).2 hk }
 end
 
 example (n m : ℕ) : m • n • 2 = (m * n) • 2 :=
