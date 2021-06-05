@@ -92,14 +92,6 @@ begin
            ... ≈ 0 + 1 : (zero_add_equiv 1).symm } } }
 end
 
--- def pow_half (n : ℕ) : pgame :=
--- -- mk punit (by {cases n, exact pempty, exact punit}) 0
--- -- ( by {  } )
--- begin
---   induction n with n hn,
---   exact 1,
---   exact mk punit punit 0 (λ _, hn)
--- end
 def pow_half : ℕ → pgame
 | 0       := mk punit pempty 0 pempty.elim
 | (n + 1) := mk punit punit 0 (λ _, pow_half n)
@@ -182,7 +174,16 @@ namespace surreal
 
 def half : surreal := ⟦⟨pgame.half, pgame.numeric_half⟩⟧
 
-def powers_half (n : ℕ) : surreal := ⟦⟨pgame.pow_half n, pgame.numeric_pow_half⟩⟧
+def pow_half (n : ℕ) : surreal := ⟦⟨pgame.pow_half n, pgame.numeric_pow_half⟩⟧
+
+@[simp]
+lemma pow_half_zero : pow_half 0 = 1 := rfl
+
+@[simp]
+lemma pow_half_one : pow_half 1 = half := rfl
+
+lemma pow_half_succ (n : ℕ) : pow_half n = 2 • pow_half n.succ :=
+sorry
 
 theorem add_half_half_eq_one : half + half = 1 :=
 quotient.sound pgame.add_half_half_equiv_one
@@ -227,6 +228,7 @@ begin
   simpa [←int.coe_nat_pow, int.coe_nat_inj'] using hnm
 end
 
+@[simp]
 theorem log_pow_eq_self (n : ℕ) : log (pow n) = n :=
 begin
   unfold log,
@@ -234,6 +236,7 @@ begin
   exact @int.pow_right_injective 2 rfl.ge (classical.some h) n (classical.some_spec h),
 end
 
+@[simp]
 theorem pow_log_eq_self (n : @submonoid.powers ℤ _ 2) : pow (log n) = n :=
 begin
   unfold pow, unfold log,
@@ -242,15 +245,55 @@ begin
   exact classical.some_spec hn,
 end
 
-noncomputable def dyadic_mk' (p : ℤ × @submonoid.powers ℤ _ 2) : surreal :=
-p.fst • powers_half (log p.snd)
+noncomputable def dyadic' (p : ℤ × @submonoid.powers ℤ _ 2) : surreal :=
+p.fst • pow_half (log p.snd)
 
 @[simp]
-theorem dyadic_mk {p : ℤ × @submonoid.powers ℤ _ 2} : dyadic_mk' (p.fst, pow p.snd) = p.fst • powers_half p.snd :=
+theorem mk_dyadic {p : ℤ × @submonoid.powers ℤ _ 2} : dyadic' (p.fst, pow p.snd) = p.fst • pow_half p.snd :=
 begin
-  unfold dyadic_mk',
+  unfold dyadic',
   congr,
   apply log_pow_eq_self,
+end
+
+
+-- lemma lem0 : dyadic' (1, pow 0) =  :=
+-- begin
+--   unfold dyadic',
+--   simp,
+--   rw ← add_half_half_eq_one,
+--   abel,
+-- end
+
+-- lemma lem1 : dyadic' (2, pow 1) = 1 :=
+-- begin
+--   unfold dyadic',
+--   simp,
+--   rw ← add_half_half_eq_one,
+--   abel,
+-- end
+
+-- set_option pp.notation false
+
+lemma lem_n (n : ℕ) : dyadic' (2 ^ n, pow n) = 1 :=
+begin
+  unfold dyadic',
+  induction n with n hn; simp at *,
+  rw [← hn, pow_half_succ n],
+  norm_cast,
+  rw [smul_smul (2^n) 2 (pow_half n.succ)],
+  congr,
+  ring_nf,
+end
+
+lemma lem2 (n k : ℕ) (hnm : 0 ≤ k) : dyadic' (2 ^ n, pow (n + k)) = pow_half k :=
+begin
+sorry
+end
+
+example (n m : ℕ) : m • n • 2 = (m * n) • 2 :=
+begin
+  exact smul_smul m n 2,
 end
 
 -- theorem bar
@@ -266,23 +309,23 @@ end
 --  sorry,
 -- end
 
-noncomputable def dyadic' : localization (@submonoid.powers ℤ _ 2) → surreal :=
-begin
-  apply quotient.lift,
-  swap,
-  { exact dyadic_mk' },
-  {
-    rintros ⟨m, p, q, hpq⟩ ⟨m', x, y, hxy⟩ h,
-    obtain ⟨⟨x', y', hxy'⟩ , h₂⟩ := localization.r_iff_exists.1 h,
-    -- rw [← hxy, ← hxy', ← hpq] at *,
-    simp only [subtype.coe_mk, mul_eq_mul_right_iff] at h₂,
-    cases h₂,
-  -- rwa bar
-  { sorry,
-  },
-  { have := nat.one_le_pow y' 2 (by norm_num),
-    linarith } }
-end
+-- noncomputable def dyadic' : localization (@submonoid.powers ℤ _ 2) → surreal :=
+-- begin
+--   apply quotient.lift,
+--   swap,
+--   { exact dyadic_mk' },
+--   {
+--     rintros ⟨m, p, q, hpq⟩ ⟨m', x, y, hxy⟩ h,
+--     obtain ⟨⟨x', y', hxy'⟩ , h₂⟩ := localization.r_iff_exists.1 h,
+--     -- rw [← hxy, ← hxy', ← hpq] at *,
+--     simp only [subtype.coe_mk, mul_eq_mul_right_iff] at h₂,
+--     cases h₂,
+--   { sorry,
+--   -- rwa bar
+--   },
+--   { have := nat.one_le_pow y' 2 (by norm_num),
+--     linarith } }
+-- end
 
 -- noncomputable def dyadic : add_monoid_hom (localization pow_two) surreal :=
 -- { to_fun := dyadic',
