@@ -286,9 +286,50 @@ begin
   ring_nf,
 end
 
-lemma lem2 (n k : ℕ) (hnm : 0 ≤ k) : dyadic' (2 ^ n, pow (n + k)) = pow_half k :=
+lemma something (m : ℕ) (x : surreal) (hm : 0 < m) : 0 < x → 0 < m • x :=
 begin
-sorry
+  intro hx,
+  cases m,
+  sorry,
+  clear hm,
+
+end
+
+-- lemma smul_cancel' (m : ℕ) (x : surreal) : x = 0 ∨ m = 0 ↔ m • x = 0 :=
+-- begin
+--   split, sorry,
+--   { rintro hmx,
+--     cases m with m,
+--     sorry,
+--     right,
+--     rcases x with ⟨⟨xl, xr, xL, xR⟩, ox⟩,
+--     sorry,
+--   }
+-- end
+
+lemma smul_cancel (m : ℤ) (x y : surreal) (hm : m ≠ 0) : x = y ↔ m • x  = m • y :=
+begin
+  split; rintro hxy,
+  { congr, exact hxy },
+  {
+    sorry,
+  }
+end
+
+lemma lem2 (n k : ℕ) : dyadic' (2 ^ n, pow (n + k)) = pow_half k :=
+begin
+  induction k with k hk,
+  { simp [lem_n] },
+  { unfold dyadic' at *,
+    simp at *,
+    have : n + k.succ = (n + k).succ, by simp only [eq_self_iff_true],
+    rw this, clear this,
+    rw [pow_half_succ (n + k)] at hk,
+    sorry
+
+    -- have := pow_half_succ k,
+
+  }
 end
 
 example (n m : ℕ) : m • n • 2 = (m * n) • 2 :=
