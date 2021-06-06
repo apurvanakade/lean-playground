@@ -134,7 +134,7 @@ end
 theorem zero_lt_pow_half {n : ℕ} : 0 < pow_half n :=
 by { cases n; rw lt_def_le; use ⟨punit.star, le_refl 0⟩ }
 
-theorem add_pow_half_pow_half {n} : pow_half (n + 1) + pow_half (n + 1) ≈ pow_half n :=
+theorem add_pow_half_pow_half_eq_pow_half {n} : pow_half (n + 1) + pow_half (n + 1) ≈ pow_half n :=
 begin
   induction n with n hn,
   { exact add_half_half_equiv_one },
@@ -245,6 +245,71 @@ begin
   exact classical.some_spec hn,
 end
 
+lemma anything {m : ℕ} {x : surreal} (hx : 0 < x) : 0 ≤ m • x :=
+begin
+  induction m with m hm,
+  { simp only [le_refl, zero_smul] },
+  { rw [succ_nsmul x m],
+    apply add_nonneg (le_of_lt hx) hm }
+end
+
+lemma something'' {m : ℤ} {x : surreal} (hm : 0 ≤ m) (hx : 0 < x) : 0 ≤ m • x :=
+begin
+  cases m with m m,
+  { have a := @anything m _ hx,
+    simpa only [int.of_nat_eq_coe, gsmul_coe_nat] },
+  { exfalso,
+    rwa [← int.neg_succ_not_nonneg m] }
+end
+
+lemma nat.something {m : ℕ} {x : surreal} (hm : 0 < m) (hx : 0 < x) : 0 < m • x :=
+begin
+    induction m with m hm,
+    { exfalso, exact nat.lt_asymm hm hm },
+    {
+      rw [succ_nsmul x m],
+      apply lt_add_of_pos_of_le hx (anything hx), }
+end
+
+lemma something {m : ℤ} {x : surreal} (hm : 0 < m) (hx : 0 < x) : 0 < m • x :=
+begin
+  cases m with m m,
+  { simp at *,
+    apply nat.something hm hx },
+  { exfalso,
+    rwa [← int.neg_succ_not_pos m] }
+end
+
+lemma nat.something' {m : ℕ} {x y : surreal} (hm : 0 < m) (hxy : x < y) : m • x < m • y :=
+begin
+  rw ← sub_pos at *,
+  have : m • y - m • x = m • (y - x),
+    by { have := (nsmul_add y (-x) m).symm, rwa [neg_nsmul x m] at this },
+  rw this,
+  apply nat.something hm hxy,
+end
+
+lemma int.something' {m : ℤ} {x y : surreal} (hm : 0 < m) (hxy : x < y) : m • x < m • y :=
+begin
+  cases m with m m,
+  { simp at *,
+    exact nat.something' hm hxy },
+  { exfalso,
+    rwa [← int.neg_succ_not_pos m] }
+end
+
+lemma nmul_left_cancel'' (m : ℤ) (x y : surreal) (hm : 0 < m) (hmxy : m • x  = m • y) : x = y :=
+begin
+    contrapose hmxy,
+    cases (@ne_iff_lt_or_gt _ _ x y).1 hmxy with hmxy' hmxy',
+    { apply ne_of_lt,
+      exact int.something' hm hmxy' },
+    { apply ne_of_gt,
+      change y < x at hmxy',
+      exact int.something' hm hmxy' }
+end
+
+@[simp]
 noncomputable def dyadic' (p : ℤ × @submonoid.powers ℤ _ 2) : surreal :=
 p.fst • pow_half (log p.snd)
 
@@ -257,25 +322,6 @@ begin
   apply log_pow_eq_self,
 end
 
-
--- lemma lem0 : dyadic' (1, pow 0) =  :=
--- begin
---   unfold dyadic',
---   simp,
---   rw ← add_half_half_eq_one,
---   abel,
--- end
-
--- lemma lem1 : dyadic' (2, pow 1) = 1 :=
--- begin
---   unfold dyadic',
---   simp,
---   rw ← add_half_half_eq_one,
---   abel,
--- end
-
--- set_option pp.notation false
-
 lemma lem_n (n : ℕ) : dyadic' (2 ^ n, pow n) = 1 :=
 begin
   unfold dyadic',
@@ -285,49 +331,6 @@ begin
   rw [smul_smul (2^n) 2 (pow_half n.succ)],
   congr,
   ring_nf,
-end
-
-example (a b : ℤ) : 0 < a → 0 ≤ b → 0 < a + b :=
-by { library_search }
-
-lemma anything (m : ℕ) (x : surreal) (hx : 0 < x) : 0 ≤ m • x :=
-begin
-  induction m with m hm,
-  { simp only [le_refl, zero_smul] },
-  { rw [succ_nsmul x m],
-    apply add_nonneg (le_of_lt hx) hm }
-
-end
-
-lemma something (m : ℕ) (x : surreal) (hm : 0 < m) : 0 < x → 0 < m • x :=
-begin
-  intro hx,
-  induction m with m hm,
-  { exfalso, exact nat.lt_asymm hm hm },
-  {
-    rw [succ_nsmul x m],
-    apply lt_add_of_pos_of_le hx (anything m x hx) }
-end
-
--- lemma smul_cancel' (m : ℕ) (x : surreal) : x = 0 ∨ m = 0 ↔ m • x = 0 :=
--- begin
---   split, sorry,
---   { rintro hmx,
---     cases m with m,
---     sorry,
---     right,
---     rcases x with ⟨⟨xl, xr, xL, xR⟩, ox⟩,
---     sorry,
---   }
--- end
-
-lemma smul_cancel (m : ℤ) (x y : surreal) (hm : m ≠ 0) : x = y ↔ m • x  = m • y :=
-begin
-  split; rintro hxy,
-  { congr, exact hxy },
-  {
-    sorry,
-  }
 end
 
 lemma lem2 (n k : ℕ) : dyadic' (2 ^ n, pow (n + k)) = pow_half k :=
@@ -343,49 +346,68 @@ begin
       by { apply smul_algebra_smul_comm },
     norm_cast at *,
     rw this at hk,
-    exact (smul_cancel 2 (2^n • pow_half (n + k).succ) (pow_half k.succ) (by norm_num)).2 hk }
+    exact (nmul_left_cancel'' 2 (2^n • pow_half (n + k).succ) (pow_half k.succ) (by norm_num)) hk }
 end
 
-example (n m : ℕ) : m • n • 2 = (m * n) • 2 :=
+lemma lem3 {m : ℤ} {n k : ℕ} : dyadic' (m * 2 ^ n, pow (n + k)) = dyadic'(m, pow k) :=
 begin
-  exact smul_smul m n 2,
+  unfold dyadic',
+  simp,
+  rw mul_gsmul,
+  congr,
+  have := lem2 n k,
+  unfold dyadic' at this,
+  simpa,
 end
 
--- theorem bar
--- (m m' x : ℤ)
--- (y : ℕ)
--- (hxy : 2 ^ y = x)
--- (p : ℤ)
--- (q : ℕ)
--- (hpq : 2 ^ q = p)
--- (h₂ : m * 2 ^ y = m' * 2 ^ q)
--- : dyadic_mk (m, ⟨p, q, hpq⟩) = dyadic_mk (m', ⟨x, y, hxy⟩) :=
--- begin
---  sorry,
--- end
+lemma dyadic_aux
+  {m₁ m₂ : ℤ} {y₁ y₂ : ℕ}
+  (h₂ : m₁ * (2 ^ y₁) = m₂ * (2 ^ y₂)) :
+  dyadic' (m₁, pow y₂) = dyadic' (m₂, pow y₁) :=
+  --m₁ • pow_half y₁ = m₂ • pow_half y₂ :=
+begin
+  by_cases y₁ ≤ y₂,
+  { obtain ⟨c, hc⟩ := le_iff_exists_add.1 h,
+    rw [hc, add_comm, pow_add, ← mul_assoc, mul_eq_mul_right_iff] at h₂,
+    cases h₂,
+    { rw h₂,
+      clear h₂,
+      have := @lem3 m₂ c y₁,
+      rwa [hc, add_comm],
+    },
+    { have := nat.one_le_pow y₁ 2 nat.succ_pos',
+      linarith } },
+  { push_neg at h,
+    obtain ⟨c, hc⟩ := le_iff_exists_add.1 (le_of_lt h),
+    rw [hc, add_comm, pow_add, ← mul_assoc, mul_eq_mul_right_iff] at h₂,
+    cases h₂,
+    { rw ← h₂,
+      symmetry,
+      clear h₂,
+      have := @lem3 m₁ c y₂,
+      rwa [hc, add_comm] },
+    { have := nat.one_le_pow y₂ 2 nat.succ_pos',
+      linarith } }
+end
 
--- noncomputable def dyadic' : localization (@submonoid.powers ℤ _ 2) → surreal :=
--- begin
---   apply quotient.lift,
---   swap,
---   { exact dyadic_mk' },
---   {
---     rintros ⟨m, p, q, hpq⟩ ⟨m', x, y, hxy⟩ h,
---     obtain ⟨⟨x', y', hxy'⟩ , h₂⟩ := localization.r_iff_exists.1 h,
---     -- rw [← hxy, ← hxy', ← hpq] at *,
---     simp only [subtype.coe_mk, mul_eq_mul_right_iff] at h₂,
---     cases h₂,
---   { sorry,
---   -- rwa bar
---   },
---   { have := nat.one_le_pow y' 2 (by norm_num),
---     linarith } }
--- end
-
--- noncomputable def dyadic : add_monoid_hom (localization pow_two) surreal :=
--- { to_fun := dyadic',
---   map_zero' := by {  sorry },
---   map_add' := by { sorry } }
+noncomputable def dyadic : localization (@submonoid.powers ℤ _ 2) → surreal :=
+begin
+  apply quotient.lift,
+  swap,
+  { exact dyadic' },
+  {
+    rintros ⟨m₁, n₁, y₁, hyn₁⟩ ⟨m₂, n₂, y₂, hyn₂⟩ h₁,
+    obtain ⟨⟨n₃, y₃, hyn₃⟩, h₂⟩ := localization.r_iff_exists.1 h₁,
+    simp only [subtype.coe_mk, mul_eq_mul_right_iff] at h₂,
+    cases h₂,
+    {
+      rw [← hyn₁, ← hyn₂] at h₂,
+      have := dyadic_aux h₂,
+      sorry },
+    { have := nat.one_le_pow y₃ 2 nat.succ_pos',
+      linarith },
+  }
+end
 
 end surreal
 
