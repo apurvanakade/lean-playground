@@ -88,7 +88,7 @@ def int.localization_away_two_dyadic : localization_map.away_map 2 dyadic :=
                       let b := mk' 1 (2 ^ a) (pow_pos zero_lt_two a) (nat.coprime_one_left (2 ^ a)),
                       use [b, a],
                       simp only [subtype.ext_iff, subring.coe_mul, subring.coe_one,
-                                subring.coe_int_cast, subtype.coe_mk],
+                                 subring.coe_int_cast, subtype.coe_mk],
                       have : b = ((2 ^ a) : ℚ)⁻¹,
                         by { rw [eq_inv_iff, inv_def'],
                              simp only [nat.cast_bit0, int.cast_one, nat.cast_one,
