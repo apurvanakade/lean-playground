@@ -11,6 +11,7 @@ def dyadic_map : localization (@submonoid.powers ℤ _ 2) →+ surreal := sorry
 end surreal
 
 namespace rat
+open rat
 
 def is_dyadic (q : ℚ) : Prop := ∃ (n : ℕ), q.denom = 2^n
 
@@ -48,7 +49,7 @@ begin
   exact ⟨k, hk⟩,
 end
 
-theorem dyadic.mul (x y : ℚ) : x.is_dyadic → y.is_dyadic → (x * y).is_dyadic :=
+theorem is_dyadic.mul (x y : ℚ) : x.is_dyadic → y.is_dyadic → (x * y).is_dyadic :=
 begin
   rintros ⟨nx, hnx⟩ ⟨ny, hny⟩,
   obtain ⟨k, hk⟩ := denom_pow_prime_mul_denom_pow_prime x.num y.num nx ny nat.prime_two,
@@ -56,7 +57,7 @@ begin
   rwa [← hnx, ← hny, num_denom'', num_denom''] at hk,
 end
 
-theorem dyadic.add (x y : ℚ) : x.is_dyadic → y.is_dyadic → (x + y).is_dyadic :=
+theorem is_dyadic.add (x y : ℚ) : x.is_dyadic → y.is_dyadic → (x + y).is_dyadic :=
 begin
   rintros ⟨nx, hnx⟩ ⟨ny, hny⟩,
   obtain ⟨k, hk⟩ := denom_pow_prime_add_denom_pow_prime x.num y.num nx ny nat.prime_two,
@@ -64,19 +65,16 @@ begin
   rwa [← hnx, ← hny, num_denom'', num_denom''] at hk,
 end
 
-theorem dyadic.neg (x : ℚ): x.is_dyadic → (-x).is_dyadic :=
+theorem is_dyadic.neg (x : ℚ): x.is_dyadic → (-x).is_dyadic :=
 λ ⟨n, hn⟩, ⟨n, by simp[hn]⟩
 
 def dyadic : subring ℚ :=
 { carrier   := { x : ℚ | x.is_dyadic },
   one_mem'  := ⟨0, by norm_num⟩,
-  mul_mem'  := dyadic.mul,
+  mul_mem'  := is_dyadic.mul,
   zero_mem' := ⟨0, by norm_num⟩,
-  add_mem'  := dyadic.add,
-  neg_mem'  := dyadic.neg }
-  
-lemma dyadic.coe_eq_iff (x y : dyadic) : x = y ↔ x.val = y.val :=
-by { simp only [set_like.coe_eq_coe, subtype.val_eq_coe] }
+  add_mem'  := is_dyadic.add,
+  neg_mem'  :=  is_dyadic.neg }
 
 def int.localization_away_two_dyadic : localization_map.away_map 2 dyadic :=
 { to_fun         := λ m : ℤ, (m : dyadic),
@@ -89,8 +87,8 @@ def int.localization_away_two_dyadic : localization_map.away_map 2 dyadic :=
                       rw is_unit_iff_exists_inv,
                       let b := mk' 1 (2 ^ a) (pow_pos zero_lt_two a) (nat.coprime_one_left (2 ^ a)),
                       use [b, a],
-                      simp only [dyadic.coe_eq_iff, subring.coe_mul, subring.coe_one,
-                                subring.coe_int_cast, subtype.coe_mk, subtype.val_eq_coe],
+                      simp only [subtype.ext_iff, subring.coe_mul, subring.coe_one,
+                                subring.coe_int_cast, subtype.coe_mk],
                       have : b = ((2 ^ a) : ℚ)⁻¹,
                         by { rw [eq_inv_iff, inv_def'],
                              simp only [nat.cast_bit0, int.cast_one, nat.cast_one,
@@ -104,7 +102,7 @@ def int.localization_away_two_dyadic : localization_map.away_map 2 dyadic :=
   surj'          := begin
                       rintro ⟨a, b, h⟩,
                       use [a.num, 2 ^ b, b],
-                      simp [dyadic.coe_eq_iff],
+                      simp [subtype.ext_iff],
                       norm_cast,
                       rw [← h, mul_denom_eq_num],
                     end,
